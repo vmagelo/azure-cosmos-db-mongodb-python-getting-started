@@ -1,6 +1,7 @@
 import getpass
 import pymongo
 
+from datetime import datetime
 from random import randint
 
 # ----------------------------------------------------------------------------------------------------------
@@ -12,9 +13,10 @@ from random import randint
 # Sample - demonstrates the basic CRUD operations on a document in the Azure Cosmos DB API for MongoDB
 # ----------------------------------------------------------------------------------------------------------
 
-CONNECTION_STRING = getpass.getpass(prompt='Enter your primary connection string: ') # Prompts user for connection string
+# CONNECTION_STRING = getpass.getpass(prompt='Enter your primary connection string: ') # Prompts user for connection string
+CONNECTION_STRING = "mongodb://python-testing:bZ7QdJ8rFlKT1f3Is36952GTPooWURgqRnlsmO4i9cJQkZ1mUD26pBsvuBIm4sf9r6jCgrj56Ed6mDOlVCxC1g==@python-testing.mongo.cosmos.azure.com:10255/?ssl=true&retrywrites=false&replicaSet=globaldb&maxIdleTimeMS=120000&appName=@python-testing@"
 DB_NAME = "api-mongodb-sample-database"
-UNSHARDED_COLLECTION_NAME = "unsharded-sample-collection"
+UNSHARDED_COLLECTION_NAME = "test-collection1"
 SAMPLE_FIELD_NAME = "sample_field"
 
 def delete_document(collection, document_id):
@@ -65,10 +67,31 @@ def main():
 
     collection = create_database_unsharded_collection(client)
     document_id = insert_sample_document(collection)
-    
+
+    ts = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
+    restaurant_record = {
+		"type":"restaurant " + ts,
+		"name": "name",
+		"street_address": "address",
+		"description":"description",
+    }
+    document_id_restaurant = collection.insert_one(restaurant_record).inserted_id
+    print("Inserted restaurant document with _id {}".format(document_id_restaurant))
+    review_record = {		
+        "restaurant":"GUID",
+		"type":"review " + ts,
+		"user_name":"user name",
+		"rating":3,
+		"review_text":"text",
+		"review_data":"datetime",
+    }
+    document_id_review = collection.insert_one(review_record).inserted_id
+    print("Inserted review document with _id {}".format(document_id_review))
+
+
     read_document(collection, document_id)
     update_document(collection, document_id)
-    delete_document(collection, document_id)
+    #delete_document(collection, document_id)
 
 
 if __name__ == '__main__':
