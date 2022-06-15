@@ -57,89 +57,20 @@ def create_database_unsharded_collection(client):
         print("Collection name {}". format(db.COLLECTION_NAME))
     
     #return db.COLLECTION_NAME
-    #return db.get_collection(UNSHARDED_COLLECTION_NAME)
-    return db[UNSHARDED_COLLECTION_NAME]
-
+    return db.get_collection(UNSHARDED_COLLECTION_NAME)
+    
 def main():
     """Connect to the API for MongoDB, create DB and collection, perform CRUD operations"""
+    """Delete all documents"""
     client = pymongo.MongoClient(CONNECTION_STRING)
     try:
         client.server_info() # validate connection string
     except pymongo.errors.ServerSelectionTimeoutError:
         raise TimeoutError("Invalid API for MongoDB connection string or timed out when attempting to connect")
 
-    collection = create_database_unsharded_collection(client)
-    #document_id = insert_sample_document(collection)
-
-    ts = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
-
-    """Write restaurant record to the collection"""
-    restaurant_record = {
-		"type":"restaurant",
-		"name": "restaurant name 1",
-		"street_address": "address",
-		"description":"description",
-        "create_date":ts,
-    }
-    document_id_restaurant1 = collection.insert_one(restaurant_record).inserted_id
-    print("Inserted restaurant document with _id {}".format(document_id_restaurant1))
-
-    """Write restaurant record to the collection"""
-    restaurant_record = {
-		"type":"restaurant",
-		"name": "restaurant name 2",
-		"street_address": "address",
-		"description":"description",
-        "create_date":ts,
-    }
-    document_id_restaurant2 = collection.insert_one(restaurant_record).inserted_id
-    print("Inserted restaurant document with _id {}".format(document_id_restaurant2))
-
-
-    """Write review record to the collection"""
-    review_record = {		
-        "restaurant":document_id_restaurant1,
-		"type":"review",
-		"user_name":"user name",
-		"rating":3,
-		"review_text":"text 1",
-		"review_data":"datetime",
-        "create_date":ts,
-    }
-    document_id_review = collection.insert_one(review_record).inserted_id
-    print("Inserted review document with _id {}".format(document_id_review))
-
-    """Write review record to the collection"""
-    review_record = {		
-        "restaurant":document_id_restaurant1,
-		"type":"review",
-		"user_name":"user name",
-		"rating":3,
-		"review_text":"text 2",
-		"review_data":"datetime",
-        "create_date":ts,
-    }
-    document_id_review = collection.insert_one(review_record).inserted_id
-    print("Inserted review document with _id {}".format(document_id_review))
-
-    """Query collection for reviews of the restaurant"""
-    results_restaurant_cursor = collection.find({"type" : "restaurant"})
-    results_review_cursor = collection.find({"type" : "review", "restaurant" : document_id_restaurant1})
-
-    """Show all restaurants in collection"""
-    print("\nRestaurants in collection:")
-    for record in results_restaurant_cursor:
-        print(record.get("name") + ", " + str(record.get("_id")))
-
-    """Show all reviews for restaurant 1"""
-    print("\nReviews for restaurant 1:")
-    for record in results_review_cursor:
-        print(record.get("review_text"))
-
-    #read_document(collection, document_id)
-    #update_document(collection, document_id)
-    #delete_document(collection, document_id)
-
+    db = client[DB_NAME]
+    collection = db.get_collection(UNSHARDED_COLLECTION_NAME)
+    collection.delete_many({})
 
 if __name__ == '__main__':
     main()
