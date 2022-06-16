@@ -1,8 +1,10 @@
 import getpass
 import pymongo
+import os
 
 from datetime import datetime
 from random import randint
+from dotenv import load_dotenv
 
 # ----------------------------------------------------------------------------------------------------------
 #  Prerequisites:
@@ -14,9 +16,16 @@ from random import randint
 # ----------------------------------------------------------------------------------------------------------
 
 # CONNECTION_STRING = getpass.getpass(prompt='Enter your primary connection string: ') # Prompts user for connection string
-CONNECTION_STRING = "mongodb://python-testing:bZ7QdJ8rFlKT1f3Is36952GTPooWURgqRnlsmO4i9cJQkZ1mUD26pBsvuBIm4sf9r6jCgrj56Ed6mDOlVCxC1g==@python-testing.mongo.cosmos.azure.com:10255/?ssl=true&retrywrites=false&replicaSet=globaldb&maxIdleTimeMS=120000&appName=@python-testing@"
-DB_NAME = "api-mongodb-sample-database"
-UNSHARDED_COLLECTION_NAME = "restaurants_reviews"
+# CONNECTION_STRING = "mongodb://python-testing:bZ7QdJ8rFlKT1f3Is36952GTPooWURgqRnlsmO4i9cJQkZ1mUD26pBsvuBIm4sf9r6jCgrj56Ed6mDOlVCxC1g==@python-testing.mongo.cosmos.azure.com:10255/?ssl=true&retrywrites=false&replicaSet=globaldb&maxIdleTimeMS=120000&appName=@python-testing@"
+# DB_NAME = "api-mongodb-sample-database"
+# COLLECTION_NAME = "restaurants_reviews"
+
+# Load environment variables from .env file
+load_dotenv()
+CONNECTION_STRING = os.getenv('CONNECTION_STRING')
+DB_NAME = os.getenv('DB_NAME')
+COLLECTION_NAME = os.getenv('COLLECTION_NAME')
+
 SAMPLE_FIELD_NAME = "sample_field"
 
 def delete_document(collection, document_id):
@@ -50,15 +59,38 @@ def create_database_unsharded_collection(client):
         print("Created db {} with shared throughput". format(DB_NAME))
     
     # Create collection if it doesn't exist
-    if UNSHARDED_COLLECTION_NAME not in db.list_collection_names():
+    if COLLECTION_NAME not in db.list_collection_names():
         # Creates a unsharded collection that uses the DBs shared throughput
-        db.command({'customAction': "CreateCollection", 'collection': UNSHARDED_COLLECTION_NAME})
-        print("Created collection {}". format(UNSHARDED_COLLECTION_NAME))
+        db.command({'customAction': "CreateCollection", 'collection': COLLECTION_NAME})
+        print("Created collection {}". format(COLLECTION_NAME))
         print("Collection name {}". format(db.COLLECTION_NAME))
     
     #return db.COLLECTION_NAME
-    #return db.get_collection(UNSHARDED_COLLECTION_NAME)
-    return db[UNSHARDED_COLLECTION_NAME]
+    #return db.get_collection(COLLECTION_NAME)
+    return db[COLLECTION_NAME]
+
+def create_restaurant_record(name, street_address, description):
+    ts = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
+    restaurant_record = {
+		"type": "restaurant",
+		"name": name,
+		"street_address": street_address,
+		"description": description,
+        "create_date":ts,
+    }
+    return restaurant_record
+
+def create_review_record(restaurant_id, user_name, rating, review_text):
+    ts = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
+    review_record = {
+        "restaurant": restaurant_id,
+		"type": "review",
+		"user_name": user_name,
+		"rating": rating,
+		"review_text": review_text,
+		"review_date": ts,
+    }
+    return review_record
 
 def main():
     """Connect to the API for MongoDB, create DB and collection, perform CRUD operations"""
@@ -74,51 +106,22 @@ def main():
     ts = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
 
     """Write restaurant record to the collection"""
-    restaurant_record = {
-		"type":"restaurant",
-		"name": "restaurant name 1",
-		"street_address": "address",
-		"description":"description",
-        "create_date":ts,
-    }
+    restaurant_record = create_restaurant_record("restaurant name 1", "address", "description")
     document_id_restaurant1 = collection.insert_one(restaurant_record).inserted_id
     print("Inserted restaurant document with _id {}".format(document_id_restaurant1))
 
     """Write restaurant record to the collection"""
-    restaurant_record = {
-		"type":"restaurant",
-		"name": "restaurant name 2",
-		"street_address": "address",
-		"description":"description",
-        "create_date":ts,
-    }
+    restaurant_record = create_restaurant_record("restaurant name 2", "address", "description")
     document_id_restaurant2 = collection.insert_one(restaurant_record).inserted_id
     print("Inserted restaurant document with _id {}".format(document_id_restaurant2))
 
-
     """Write review record to the collection"""
-    review_record = {		
-        "restaurant":document_id_restaurant1,
-		"type":"review",
-		"user_name":"user name",
-		"rating":3,
-		"review_text":"text 1",
-		"review_data":"datetime",
-        "create_date":ts,
-    }
+    review_record = create_review_record(document_id_restaurant1, "user 1", 3, "review text")
     document_id_review = collection.insert_one(review_record).inserted_id
     print("Inserted review document with _id {}".format(document_id_review))
 
     """Write review record to the collection"""
-    review_record = {		
-        "restaurant":document_id_restaurant1,
-		"type":"review",
-		"user_name":"user name",
-		"rating":3,
-		"review_text":"text 2",
-		"review_data":"datetime",
-        "create_date":ts,
-    }
+    review_record = create_review_record(document_id_restaurant1, "user 2", 4, "review text 2")
     document_id_review = collection.insert_one(review_record).inserted_id
     print("Inserted review document with _id {}".format(document_id_review))
 

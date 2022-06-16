@@ -1,0 +1,48 @@
+    """Write restaurant record to the collection"""
+    restaurant_record = {
+		"type":"restaurant",
+		"name": "restaurant name 1",
+		"street_address": "address",
+		"description":"description",
+        "create_date":ts,
+    }
+    document_id_restaurant1 = collection.insert_one(restaurant_record).inserted_id
+    print("Inserted restaurant document with _id {}".format(document_id_restaurant1))
+
+    """Write restaurant record to the collection"""
+    restaurant_record = {
+		"type":"restaurant",
+		"name": "restaurant name 2",
+		"street_address": "address",
+		"description":"description",
+        "create_date":ts,
+    }
+    document_id_restaurant2 = collection.insert_one(restaurant_record).inserted_id
+    print("Inserted restaurant document with _id {}".format(document_id_restaurant2))
+
+
+    """Write review record to the collection"""
+    review_record = {		
+        "restaurant":document_id_restaurant1,
+		"type":"review",
+		"user_name":"user name",
+		"rating":3,
+		"review_text":"text 1",
+		"review_data":"datetime",
+        "create_date":ts,
+    }
+    document_id_review = collection.insert_one(review_record).inserted_id
+    print("Inserted review document with _id {}".format(document_id_review))
+
+    """Write review record to the collection"""
+    review_record = {		
+        "restaurant":document_id_restaurant1,
+		"type":"review",
+		"user_name":"user name",
+		"rating":3,
+		"review_text":"text 2",
+		"review_data":"datetime",
+        "create_date":ts,
+    }
+    document_id_review = collection.insert_one(review_record).inserted_id
+    print("Inserted review document with _id {}".format(document_id_review))
